@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Downloaded at build time (tools/fetch_lhm.py)
+vendor/
+
+# .NET spike build output
+spike/**/bin/
+spike/**/obj/
+spike/**/out/
+
+# Secrets and local settings: never commit
+.env
+.env.*
+*.env
+*.pem
+*.pfx
+*.key
+config.toml
+theme.toml
+
+# Captures and logs (may contain device or personal info)
+*.pcap
+*.pcapng
+*.log
+
+# Editors and OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+desktop.ini

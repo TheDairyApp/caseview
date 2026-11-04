@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#16171c">
+<title>CaseView</title>
+<style>
+  :root {
+    --bg: #16171c; --card: #202127; --field: #2a2b32; --border: rgba(255,255,255,.08);
+    --text: #f0f0f3; --muted: #9a9ca5; --accent: #0a84ff;
+    --blue: #409cff; --purple: #af6eff; --green: #34c759; --orange: #ff9f0a;
+    --teal: #30d1c8; --pink: #ff5578;
+  }
+  @media (prefers-color-scheme: light) {
+    :root { --bg: #f3f4f7; --card: #fff; --field: #eef0f3; --border: rgba(0,0,0,.08);
+            --text: #1d1d1f; --muted: #6e7078; }
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+         font: 15px/1.35 -apple-system, "Segoe UI", system-ui, sans-serif;
+         padding: max(16px, env(safe-area-inset-top)) 16px 32px; }
+  h1 { font-size: 26px; margin: 4px 0 2px; }
+  .sub { color: var(--muted); font-size: 13px; margin-bottom: 16px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 18px;
+          padding: 14px; }
+  .wide { grid-column: 1 / -1; }
+  .title { font-weight: 600; font-size: 14px; }
+  .muted { color: var(--muted); font-size: 12.5px; }
+  .metric { display: flex; gap: 12px; align-items: center; }
+  .ring { position: relative; width: 58px; height: 58px; flex: none; }
+  .ring svg { transform: rotate(-90deg); }
+  .ring b { position: absolute; inset: 0; display: grid; place-items: center; font-size: 17px; }
+  .spark { width: 100%; height: 30px; display: block; margin-top: 4px; }
+  .row { display: flex; justify-content: space-between; align-items: center; margin: 10px 0 4px; }
+  .bar { height: 6px; border-radius: 3px; background: var(--field); overflow: hidden; }
+  .bar i { display: block; height: 100%; border-radius: 3px; }
+  label { display: block; color: var(--muted); font-size: 12.5px; margin: 12px 0 6px; }
+  select, input[type=range] { width: 100%; }
+  select { background: var(--field); color: var(--text); border: 1px solid var(--border);
+           border-radius: 10px; padding: 10px; font: inherit; }
+  input[type=range] { accent-color: var(--accent); }
+  input[type=color] { width: 100%; height: 44px; border: none; border-radius: 10px;
+                      background: none; padding: 0; }
+  .swatches { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+  .swatches button { width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--border); }
+  .switch { position: relative; width: 50px; height: 30px; flex: none; }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .switch span { position: absolute; inset: 0; background: var(--field); border-radius: 15px;
+                 transition: .2s; }
+  .switch span::before { content: ""; position: absolute; width: 24px; height: 24px; left: 3px;
+                         top: 3px; background: #fff; border-radius: 50%; transition: .2s; }
+  .switch input:checked + span { background: var(--accent); }
+  .switch input:checked + span::before { transform: translateX(20px); }
+  .pill { display: inline-block; padding: 3px 10px; border-radius: 11px; background: var(--field);
+          color: var(--muted); font-size: 12px; }
+  #login { max-width: 340px; margin: 18vh auto 0; text-align: center; }
+  #pin { font-size: 28px; letter-spacing: 8px; text-align: center; width: 100%; padding: 12px;
+         border-radius: 14px; border: 1px solid var(--border); background: var(--field);
+         color: var(--text); }
+  button.primary { margin-top: 14px; width: 100%; padding: 14px; border: 0; border-radius: 14px;
+                   background: var(--accent); color: #fff; font: 600 16px inherit; }
+  .err { color: var(--pink); margin-top: 10px; min-height: 20px; }
+  section { margin-top: 18px; }
+  .lcd { background: #080a0e; border-radius: 14px; padding: 12px 8px 8px; display: flex;
+         justify-content: space-around; border: 1px solid rgba(255,255,255,.08); }
+  .lcd div { text-align: center; }
+  .lcd b { font: 700 30px/1.1 Consolas, "SF Mono", ui-monospace, monospace; color: #50dcff;
+           letter-spacing: 1px; text-shadow: 0 0 10px rgba(80,220,255,.35); }
+  .lcd b i { color: rgba(80,220,255,.12); font-style: normal; }
+  .lcd small { display: block; color: #9a9ca5; font-size: 10.5px; margin-top: 2px; }
+  .page { margin-top: 10px; }
+  .page .lcd b { font-size: 24px; }
+  .page select { margin-top: 6px; padding: 8px; }
+  .page .muted { margin-top: 8px; }
+  section > h2 { font-size: 17px; margin: 0 0 10px; }
+</style>
+</head>
+<body>
+<div id="login" hidden>
+  <h1>CaseView</h1>
+  <p class="muted">Enter the PIN shown in the CaseView tray menu under “Phone access”.</p>
+  <input id="pin" inputmode="numeric" maxlength="6" autocomplete="one-time-code">
+  <button class="primary" id="go">Connect</button>
+  <div class="err" id="loginErr"></div>
+</div>
+
+<main id="app" hidden>
+  <h1>CaseView</h1>
+  <div class="sub"><span class="pill" id="status">…</span></div>
+
+  <div class="grid" id="metrics"></div>
+
+  <div class="card wide" style="margin-top:10px">
+    <div class="title">Temperatures &amp; fans</div>
+    <div id="sensors"></div>
+  </div>
+
+  <div class="card wide" style="margin-top:10px" id="powerCard">
+    <div class="title">Power</div>
+    <div id="power"></div>
+  </div>
+
+  <section>
+    <h2>Lighting</h2>
+    <div class="card">
+      <div class="row" style="margin-top:0">
+        <div class="title">Case lights</div>
+        <label class="switch"><input type="checkbox" id="rgbOn"><span></span></label>
+      </div>
+      <label>Effect</label>
+      <select id="effect"></select>
+      <label>Color</label>
+      <input type="color" id="color">
+      <div class="swatches" id="swatches"></div>
+      <label>Brightness <span id="brightVal"></span></label>
+      <input type="range" id="brightness" min="0" max="100">
+      <label>Speed <span id="speedVal"></span></label>
+      <input type="range" id="speed" min="1" max="10">
+      <label>Profile</label>
+      <select id="profile"></select>
+    </div>
+  </section>
+
+  <section>
+    <h2>Case display</h2>
+    <div class="card">
+      <div class="row" style="margin-top:0"><div class="title">Now showing</div>
+        <span class="pill" id="pageNow">–</span></div>
+      <div id="lcdNow"></div>
+      <label>Seconds per page <span id="secVal"></span></label>
+      <input type="range" id="pageSec" min="2" max="30">
+    </div>
+    <div id="pages"></div>
+  </section>
+</main>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const METRICS = [
+  ["cpu_load", "CPU", "--blue", (v) => v.cpu_temp != null ? Math.round(v.cpu_temp) + " °C" : ""],
+  ["gpu_load", "GPU", "--purple", (v) => v.gpu_temp != null ? Math.round(v.gpu_temp) + " °C" : ""],
+  ["ram_pct", "Memory", "--green", (v) => v.ram_used_gb != null ? v.ram_used_gb.toFixed(1) + " / " + Math.round(v.ram_total_gb) + " GB" : ""],
+  ["disk_pct", "Disk C:", "--orange", (v) => v.disk_free_gb != null ? Math.round(v.disk_free_gb) + " GB free" : ""],
+];
+const SENSORS = [
+  ["cpu_temp", "CPU", "--pink", 100, " °C"], ["gpu_temp", "GPU", "--purple", 100, " °C"],
+  ["gpu_hotspot", "GPU hot spot", "--orange", 110, " °C"], ["cpu_fan", "CPU fan", "--teal", 3000, " rpm"],
+];
+const SWATCHES = ["#FF3B30","#FF9500","#FFCC00","#34C759","#00C7BE","#32ADE6","#007AFF","#5856D6","#AF52DE","#FF2D55","#FFFFFF"];
+let pin = localStorage.getItem("caseview-pin") || "";
+let state = null, editing = 0, timer = null;
+
+async function api(path, body) {
+  const res = await fetch(path, {
+    method: body ? "POST" : "GET",
+    headers: { "X-CaseView-PIN": pin, "Content-Type": "application/json" },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw Object.assign(new Error(data.error || res.statusText), { status: res.status });
+  return data;
+}
+
+function ring(value, color) {
+  const r = 24, c = 2 * Math.PI * r, v = value == null ? 0 : Math.max(0, Math.min(100, value));
+  return `<div class="ring"><svg width="58" height="58"><circle cx="29" cy="29" r="${r}" fill="none"
+    stroke="var(${color})" stroke-opacity=".2" stroke-width="6"/><circle cx="29" cy="29" r="${r}"
+    fill="none" stroke="var(${color})" stroke-width="6" stroke-linecap="round"
+    stroke-dasharray="${c * v / 100} ${c}"/></svg><b>${value == null ? "–" : Math.round(value)}</b></div>`;
+}
+
+function spark(data, color, top) {
+  if (!data || data.length < 2) return `<svg class="spark"></svg>`;
+  const max = top || Math.max(...data, 1), w = 100, h = 30;
+  const pts = data.map((v, i) => `${(i / (data.length - 1)) * w},${h - (Math.min(v, max) / max) * (h - 2) - 1}`);
+  return `<svg class="spark" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
+    <polygon points="0,${h} ${pts.join(" ")} ${w},${h}" fill="var(${color})" fill-opacity=".18"/>
+    <polyline points="${pts.join(" ")}" fill="none" stroke="var(${color})" stroke-width="1.6"
+      vector-effect="non-scaling-stroke"/></svg>`;
+}
+
+function render() {
+  const v = state.values, h = state.history;
+  $("status").textContent = state.status;
+  $("metrics").innerHTML = METRICS.map(([k, t, c, d]) => `<div class="card"><div class="metric">
+    ${ring(v[k], c)}<div style="min-width:0;flex:1"><div class="title">${t}</div>
+    <div class="muted">${d(v) || "&nbsp;"}</div></div></div>${spark(h[k], c, 100)}</div>`).join("");
+  $("sensors").innerHTML = SENSORS.filter(([k]) => v[k] != null).map(([k, t, c, top, unit]) => `
+    <div class="row"><span class="muted">${t}</span><b>${Math.round(v[k])}${unit}</b></div>
+    <div class="bar"><i style="width:${Math.min(100, v[k] / top * 100)}%;background:var(${c})"></i></div>`).join("")
+    || `<p class="muted">No temperature readings (CaseView needs administrator rights).</p>`;
+  const P = [["cpu_power", "CPU", " W", "cpu_amps"], ["gpu_power", "GPU", " W", "gpu_amps"],
+             ["total_power", "PC total (est.)", " W", null], ["wall_power", "At the wall (est.)", " W", "wall_amps"]];
+  $("power").innerHTML = P.filter(([k]) => v[k] != null).map(([k, t, u, a]) => `
+    <div class="row"><span class="muted">${t}</span><b>${Math.round(v[k])}${u}${a && v[a] != null ? ` · ${v[a].toFixed(a === "wall_amps" ? 2 : 1)} A` : ""}</b></div>`).join("")
+    || `<p class="muted">No power readings yet.</p>`;
+  renderLive();
+  if (Date.now() - editing < 1500) return;  // don't fight the user's thumb
+  const rgb = state.rgb;
+  $("rgbOn").checked = rgb.enabled;
+  $("effect").innerHTML = state.effects.map(([id, label]) =>
+    `<option value="${id}" ${id === rgb.effect ? "selected" : ""}>${label}</option>`).join("");
+  $("color").value = rgb.color;
+  $("brightness").value = rgb.brightness; $("brightVal").textContent = rgb.brightness + " %";
+  $("speed").value = rgb.speed; $("speedVal").textContent = rgb.speed;
+  $("profile").innerHTML = `<option value="">Choose a profile…</option>` +
+    state.profiles.map((p) => `<option>${p.replace(/[<&]/g, "")}</option>`).join("");
+  renderPages();
+}
+
+const READOUTS = [["cpu_temp", 2, "CPU"], ["cpu_fan", 4, "FAN"], ["gpu_temp", 2, "GPU"]];
+const esc = (t) => String(t).replace(/[<&"]/g, (c) => ({ "<": "&lt;", "&": "&amp;", '"': "&quot;" }[c]));
+function digits(v, n) {
+  if (v == null) return `<i>${"8".repeat(n)}</i>`;
+  const s = String(Math.max(0, Math.min(10 ** n - 1, Math.round(v))));
+  return `<i>${"8".repeat(n - s.length)}</i>${s}`;
+}
+function lcd(page, labels) {
+  return `<div class="lcd">${READOUTS.map(([slot, n, name]) => `<div><b>${digits(page.values[slot], n)}</b>
+    <small>${labels ? esc(label(page[slot])) : name}</small></div>`).join("")}</div>`;
+}
+const label = (key) => (state.display.sources.find(([k]) => k === key) || [key, key])[1];
+function renderLive() {
+  const d = state.display, cur = d.pages.find((p) => p.name === d.current) || d.pages[0];
+  $("pageNow").textContent = d.current;
+  $("lcdNow").innerHTML = lcd(cur, true);
+}
+function renderPages() {
+  const d = state.display;
+  $("pageSec").value = d.page_seconds; $("secVal").textContent = d.page_seconds + " s";
+  $("pages").innerHTML = d.pages.map((p, i) => `<div class="card page">
+    <div class="row" style="margin-top:0"><div class="title">${esc(p.name)}</div>
+      <label class="switch"><input type="checkbox" data-page="${i}" data-field="enabled" ${p.enabled ? "checked" : ""}><span></span></label></div>
+    ${lcd(p, false)}
+    ${READOUTS.map(([slot, n, name]) => `<div class="muted">${name} readout (${n} digits)</div>
+      <select data-page="${i}" data-field="${slot}">${d.sources.map(([k, l]) =>
+        `<option value="${k}" ${k === p[slot] ? "selected" : ""}>${esc(l)}</option>`).join("")}</select>`).join("")}
+  </div>`).join("");
+}
+function sendPages() {
+  const d = state.display;
+  send("/api/pages", { page_seconds: +$("pageSec").value, pages: d.pages.map((p) =>
+    ({ name: p.name, enabled: p.enabled, cpu_temp: p.cpu_temp, cpu_fan: p.cpu_fan, gpu_temp: p.gpu_temp })) });
+}
+
+async function refresh() {
+  try { state = await api("/api/state"); render(); $("app").hidden = false; $("login").hidden = true; }
+  catch (e) { if (e.status === 401 || e.status === 429) showLogin(e.message); }
+}
+function poll() { clearInterval(timer); timer = setInterval(() => document.visibilityState === "visible" && refresh(), 2000); }
+function showLogin(msg) { clearInterval(timer); $("app").hidden = true; $("login").hidden = false; $("loginErr").textContent = msg || ""; }
+async function send(path, body) {
+  editing = Date.now();
+  try { state = await api(path, body); render(); } catch (e) { alert(e.message); }
+}
+
+$("go").onclick = async () => { pin = $("pin").value.trim(); localStorage.setItem("caseview-pin", pin); await refresh(); if (!$("app").hidden) poll(); };
+$("rgbOn").onchange = (e) => send("/api/rgb", { enabled: e.target.checked });
+$("effect").onchange = (e) => send("/api/rgb", { effect: e.target.value });
+$("color").oninput = (e) => { editing = Date.now(); };
+$("color").onchange = (e) => send("/api/rgb", { color: e.target.value, effect: "static" });
+$("brightness").oninput = (e) => { editing = Date.now(); $("brightVal").textContent = e.target.value + " %"; };
+$("brightness").onchange = (e) => send("/api/rgb", { brightness: +e.target.value });
+$("speed").oninput = (e) => { editing = Date.now(); $("speedVal").textContent = e.target.value; };
+$("speed").onchange = (e) => send("/api/rgb", { speed: +e.target.value });
+$("profile").onchange = (e) => e.target.value && send("/api/profile", { name: e.target.value });
+$("pages").onchange = (e) => {
+  const i = e.target.dataset.page, f = e.target.dataset.field;
+  if (i == null) return;
+  state.display.pages[i][f] = f === "enabled" ? e.target.checked : e.target.value;
+  sendPages();
+};
+$("pageSec").oninput = (e) => { editing = Date.now(); $("secVal").textContent = e.target.value + " s"; };
+$("pageSec").onchange = () => sendPages();
+$("swatches").innerHTML = SWATCHES.map((c) => `<button style="background:${c}" data-c="${c}"></button>`).join("");
+$("swatches").onclick = (e) => e.target.dataset.c && send("/api/rgb", { color: e.target.dataset.c, effect: "static" });
+document.addEventListener("visibilitychange", () => document.visibilityState === "visible" && refresh());
+
+if (pin) refresh().then(poll); else showLogin();
+</script>
+</body>
+</html>

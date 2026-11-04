@@ -1,0 +1,39 @@
+name: New display support
+description: Ask for (or help add) support for another case display
+labels: [display-support]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        See [Adding a display](https://github.com/OWNER/caseview/blob/main/docs/adding-a-display.md) for how to capture what the vendor app sends.
+  - type: input
+    id: model
+    attributes:
+      label: Case / display model
+      placeholder: Brand, model, where it's mounted
+    validations:
+      required: true
+  - type: input
+    id: usb
+    attributes:
+      label: USB ID
+      description: VID:PID from `caseview list-devices` (the entry that disappears when you unplug the display)
+      placeholder: "1234:5678"
+    validations:
+      required: true
+  - type: textarea
+    id: readouts
+    attributes:
+      label: What does the display show?
+      description: Number of readouts, digits each, labels printed on the case. A photo helps a lot.
+    validations:
+      required: true
+  - type: input
+    id: vendor
+    attributes:
+      label: Vendor app name
+  - type: textarea
+    id: capture
+    attributes:
+      label: USB capture
+      description: Attach a short USBPcap `.pcapng` while the vendor app updates the display, or paste a few output reports as hex.

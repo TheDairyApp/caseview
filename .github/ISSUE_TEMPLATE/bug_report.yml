@@ -1,0 +1,46 @@
+name: Bug report
+description: Something doesn't work as expected
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting! Please remove personal info (user names, serial numbers, paths) from logs before pasting.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Start `caseview tray` as administrator
+        2. Open Lighting…
+        3. …
+  - type: input
+    id: version
+    attributes:
+      label: CaseView version
+      description: Output of `caseview --version`
+    validations:
+      required: true
+  - type: input
+    id: windows
+    attributes:
+      label: Windows version
+      placeholder: Windows 11 24H2
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options: [Case display, Lighting / OpenRGB, Sensors, Tray / dashboard / stats bar, Phone access, Install / startup, Other]
+  - type: textarea
+    id: logs
+    attributes:
+      label: Log excerpt
+      description: From `%APPDATA%\CaseView\logs\caseview.log`
+      render: text
