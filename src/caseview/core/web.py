@@ -34,6 +34,7 @@ class Controller(Protocol):
     def web_apply_profile(self, name: str) -> None: ...
     def web_set_slot(self, slot: str, sensor: str) -> None: ...
     def web_set_pages(self, pages: list[dict[str, Any]], page_seconds: float) -> None: ...
+    def web_lock_page(self, name: str) -> None: ...
 
 
 def new_pin() -> str:
@@ -168,6 +169,7 @@ def _make_handler(server: WebServer) -> type[BaseHTTPRequestHandler]:
                     "/api/slot": lambda: server.controller.web_set_slot(
                         str(body["slot"]), str(body["sensor"])
                     ),
+                    "/api/lock": lambda: server.controller.web_lock_page(str(body.get("name", ""))),
                     "/api/pages": lambda: server.controller.web_set_pages(
                         list(body["pages"]), float(body.get("page_seconds", 5))
                     ),

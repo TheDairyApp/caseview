@@ -245,3 +245,14 @@ def test_pages_config_round_trip_and_validation() -> None:
         Config.from_toml("pages = []")
     with pytest.raises(ConfigError):
         Config.from_toml("[display]\npage_seconds = 0")
+
+
+def test_locked_page_stays_even_when_switched_off_and_unknown_lock_rotates() -> None:
+    cfg = Config(page_seconds=5)
+    cfg.pages[2].enabled = False
+    cfg.locked_page = cfg.pages[2].name  # "GPU", switched off for rotation
+    h = Harness(cfg)
+    assert {h.engine.current_page(t).name for t in (0, 5, 10, 15)} == {"GPU"}
+    cfg.locked_page = "Renamed away"
+    assert h.engine.current_page(0).name == "Power"
+    assert Config.from_toml(Config(locked_page="CPU").to_toml()).locked_page == "CPU"

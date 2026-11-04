@@ -128,6 +128,8 @@ The display rotates through pages; each page decides what the three readouts sho
 
 Edit them in **tray menu → Case display…**, from the dashboard (*Edit pages…*), or on your phone. You can rename, switch off, reorder, add and remove pages, and set the seconds per page. The 2-digit readouts show up to 99. The labels printed on the case don't change.
 
+**Lock a page** to keep the display on it instead of rotating: tray menu → *Display page* → *Lock on “Power”*, the **Lock** button on a page in the Case display window, or the 🔒 buttons on your phone. *Rotate pages* unlocks it. A locked page shows even if it's switched off for rotation.
+
 ## Lighting
 
 Open **Lighting…** from the tray. Pick a device and zone, choose a color on the wheel (or type hex/RGB), and pick an effect:

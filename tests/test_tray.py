@@ -119,3 +119,27 @@ def test_display_window_previews_live_and_reverts_without_save(app_tray: tray.Tr
     assert app_tray.config.pages[0].cpu_fan == "cpu_clock"  # applied live
     window.close()
     assert app_tray.config.pages[0].cpu_fan == "total_power"  # reverted: not saved
+
+
+def test_lock_page_from_tray_web_and_editor(app_tray: tray.TrayApp, tmp_path: Path) -> None:
+    app_tray.lock_page("Temp")
+    assert app_tray.engine.current_page().name == "Temp"
+    assert 'locked_page = "Temp"' in (tmp_path / "CaseView" / "config.toml").read_text(
+        encoding="utf-8"
+    )
+    assert app_tray.web_state()["display"]["locked"] == "Temp"
+    with pytest.raises(ValueError):
+        app_tray.web_lock_page("No such page")
+
+    app_tray._fill_page_menu()
+    checked = [a.text() for a in app_tray.page_menu.actions() if a.isChecked()]
+    assert checked == ["Lock on “Temp”"]
+
+    app_tray.open_display_pages()
+    window = app_tray._display_window
+    assert window is not None and window.cards[3].lock_button.isChecked()
+    window.cards[0].lock_button.click()  # lock on Power from the editor
+    assert app_tray.config.locked_page == "Power" and window.cards[0].lock_button.isChecked()
+    window.unlock_button.click()
+    assert app_tray.config.locked_page == "" and app_tray.config.locked() is None
+    window.close()

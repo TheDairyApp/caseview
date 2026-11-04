@@ -134,6 +134,9 @@ class Engine:
         return self.status
 
     def current_page(self, now: float | None = None) -> DisplayPage:
+        locked = self.config.locked()
+        if locked is not None:  # a locked page shows even if it is switched off for rotation
+            return locked
         pages = self.config.enabled_pages()
         t = self._clock() if now is None else now
         return pages[int(t // self.config.page_seconds) % len(pages)]

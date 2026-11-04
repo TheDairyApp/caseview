@@ -119,9 +119,14 @@ class Config:
     power: PowerSettings = field(default_factory=PowerSettings)
     pages: list[DisplayPage] = field(default_factory=default_pages)
     page_seconds: float = 5.0  # how long each display page stays before the next one
+    locked_page: str = ""  # name of a page to stay on; "" = rotate through enabled pages
 
     def enabled_pages(self) -> list[DisplayPage]:
         return [p for p in self.pages if p.enabled] or self.pages[:1]
+
+    def locked(self) -> DisplayPage | None:
+        """The locked page, if the lock names a page that still exists."""
+        return next((p for p in self.pages if p.name == self.locked_page), None)
 
     def sensor_for(self, slot_id: str) -> str:
         return self.slots.get(slot_id, SlotConfig()).sensor
@@ -133,6 +138,7 @@ class Config:
                 "reconnect_interval_s": self.reconnect_interval_s,
                 "sensor_interval_s": self.sensor_interval_s,
                 "page_seconds": self.page_seconds,
+                "locked_page": self.locked_page,
             },
             "slots": {k: {"sensor": v.sensor} for k, v in self.slots.items()},
             "pages": [{"name": p.name, "enabled": p.enabled, **p.sources()} for p in self.pages],
@@ -188,6 +194,7 @@ class Config:
             _parse_power(data.get("power", {})),
             _parse_pages(data.get("pages"), slots),
             float(page_seconds),
+            str(display.get("locked_page", ""))[:24],
         )
 
 

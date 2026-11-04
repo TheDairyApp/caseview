@@ -74,6 +74,10 @@
   .page .lcd b { font-size: 24px; }
   .page select { margin-top: 6px; padding: 8px; }
   .page .muted { margin-top: 8px; }
+  .lock { border: 1px solid var(--border); background: var(--field); color: var(--text);
+          border-radius: 10px; padding: 7px 12px; font: 600 13px inherit; margin-right: 8px; }
+  .lock.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .lockbar { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
   section > h2 { font-size: 17px; margin: 0 0 10px; }
 </style>
 </head>
@@ -129,6 +133,7 @@
       <div class="row" style="margin-top:0"><div class="title">Now showing</div>
         <span class="pill" id="pageNow">–</span></div>
       <div id="lcdNow"></div>
+      <div class="lockbar" id="lockbar"></div>
       <label>Seconds per page <span id="secVal"></span></label>
       <input type="range" id="pageSec" min="2" max="30">
     </div>
@@ -224,7 +229,9 @@ function lcd(page, labels) {
 const label = (key) => (state.display.sources.find(([k]) => k === key) || [key, key])[1];
 function renderLive() {
   const d = state.display, cur = d.pages.find((p) => p.name === d.current) || d.pages[0];
-  $("pageNow").textContent = d.current;
+  $("pageNow").textContent = d.locked ? "🔒 " + d.current : d.current;
+  $("lockbar").innerHTML = `<button class="lock ${d.locked ? "" : "on"}" data-lock="">Rotate</button>` +
+    d.pages.map((p) => `<button class="lock ${d.locked === p.name ? "on" : ""}" data-lock="${esc(p.name)}">🔒 ${esc(p.name)}</button>`).join("");
   $("lcdNow").innerHTML = lcd(cur, true);
 }
 function renderPages() {
@@ -271,6 +278,10 @@ $("pages").onchange = (e) => {
   if (i == null) return;
   state.display.pages[i][f] = f === "enabled" ? e.target.checked : e.target.value;
   sendPages();
+};
+$("lockbar").onclick = (e) => {
+  const b = e.target.closest("button[data-lock]");
+  if (b) send("/api/lock", { name: b.dataset.lock });
 };
 $("pageSec").oninput = (e) => { editing = Date.now(); $("secVal").textContent = e.target.value + " s"; };
 $("pageSec").onchange = () => sendPages();

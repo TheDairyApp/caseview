@@ -19,6 +19,7 @@ CaseView keeps its settings in `%APPDATA%\CaseView\`:
 | `reconnect_interval_s` | `3.0` | Retry delay after the display is unplugged or a write fails |
 | `sensor_interval_s` | `2.0` | How often hardware sensors are read (0.5–30). Lower = more CPU |
 | `page_seconds` | `5.0` | How long each display page shows (1–600) |
+| `locked_page` | `""` | Name of a page to stay on; empty = rotate through enabled pages |
 
 ## `[[pages]]`
 

@@ -20,6 +20,7 @@ from typing import TYPE_CHECKING, Any
 from PySide6.QtCore import QLockFile, QObject, QPoint, QRectF, Qt, QTimer, QUrl
 from PySide6.QtGui import (
     QAction,
+    QActionGroup,
     QColor,
     QCursor,
     QDesktopServices,
@@ -187,6 +188,8 @@ class TrayApp(QObject):
 
         m.addAction("Dashboard", self.open_dashboard)
         m.addAction("Case display…", self.open_display_pages)
+        self.page_menu = m.addMenu("Display page")
+        self.page_menu.aboutToShow.connect(self._fill_page_menu)
         self.bar_action = QAction("Taskbar stats bar", m, checkable=True)
         self.bar_action.setChecked(self.config.ui.stats_bar)
         self.bar_action.toggled.connect(self._show_bar)
@@ -273,7 +276,8 @@ class TrayApp(QObject):
 
     def _page_info(self) -> tuple[str, dict[str, str], dict[str, float | None]]:
         page = self.engine.current_page()
-        return page.name, page.sources(), self.engine.page_values(page)
+        name = f"{page.name} (locked)" if self.config.locked() else page.name
+        return name, page.sources(), self.engine.page_values(page)
 
     def open_display_pages(self) -> None:
         from caseview.ui.display_window import DisplayWindow
@@ -288,11 +292,39 @@ class TrayApp(QObject):
             lambda: self.engine.current_page().name,
             self._apply_pages,
             self.theme,
+            lock=self.lock_page,
         )
         window.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         window.destroyed.connect(self._display_closed)
         window.show()
         self._display_window = window
+
+    def _fill_page_menu(self) -> None:
+        menu = self.page_menu
+        menu.clear()
+        group = QActionGroup(menu)
+        rotate = menu.addAction(f"Rotate pages (every {self.config.page_seconds:g} s)")
+        rotate.setCheckable(True)
+        rotate.setChecked(self.config.locked() is None)
+        rotate.triggered.connect(lambda: self.lock_page(""))
+        group.addAction(rotate)
+        menu.addSeparator()
+        for page in self.config.pages:
+            action = menu.addAction(f"Lock on “{page.name}”")
+            action.setCheckable(True)
+            action.setChecked(self.config.locked_page == page.name)
+            action.triggered.connect(functools.partial(self.lock_page, page.name))
+            group.addAction(action)
+
+    def lock_page(self, name: str) -> None:
+        """Keep the display on page `name`; "" goes back to rotating. Saved immediately."""
+        if name and not any(p.name == name for p in self.config.pages):
+            raise ValueError(f"no display page named {name!r}")
+        with self._lock:
+            self.config.locked_page = name
+            config_mod.save(self.config)
+        if self._display_window is not None:
+            self._display_window.set_locked(name)
 
     def _display_closed(self) -> None:
         self._display_window = None
@@ -413,6 +445,7 @@ class TrayApp(QObject):
             "display": {
                 "current": self.engine.current_page().name,
                 "page_seconds": self.config.page_seconds,
+                "locked": self.config.locked_page if self.config.locked() else "",
                 "sources": [[k, label] for k, label in DISPLAY_SOURCES.items()],
                 "pages": [
                     {
@@ -465,6 +498,9 @@ class TrayApp(QObject):
                 )
             )
         self._apply_pages(parsed, page_seconds, True)
+
+    def web_lock_page(self, name: str) -> None:
+        self.lock_page(name)
 
     def web_set_rgb(self, changes: dict[str, Any]) -> None:
         with self._lock:

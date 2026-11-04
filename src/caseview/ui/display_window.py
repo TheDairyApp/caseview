@@ -33,6 +33,7 @@ class PageCard(QFrame):
     changed = Signal()
     moveRequested = Signal(object, int)
     removeRequested = Signal(object)
+    lockRequested = Signal(object)
 
     def __init__(self, page: DisplayPage) -> None:
         super().__init__()
@@ -53,6 +54,11 @@ class PageCard(QFrame):
         self.enabled.toggled.connect(self._edited)
         head.addWidget(self.enabled)
         head.addStretch()
+        self.lock_button = QPushButton("Lock")
+        self.lock_button.setCheckable(True)
+        self.lock_button.setToolTip("Keep the display on this page (stop rotating)")
+        self.lock_button.clicked.connect(lambda: self.lockRequested.emit(self))
+        head.addWidget(self.lock_button)
         for text, tip, action in (
             ("↑", "Move up", lambda: self.moveRequested.emit(self, -1)),
             ("↓", "Move down", lambda: self.moveRequested.emit(self, 1)),
@@ -91,6 +97,13 @@ class PageCard(QFrame):
             setattr(self.page, slot, str(box.currentData()))
         self.changed.emit()
 
+    def set_locked(self, locked: bool) -> None:
+        self.lock_button.setChecked(locked)
+        self.lock_button.setText("🔒 Locked" if locked else "Lock")
+        self.lock_button.setObjectName("Primary" if locked else "")
+        self.lock_button.style().unpolish(self.lock_button)
+        self.lock_button.style().polish(self.lock_button)
+
     def refresh(self, values: dict[str, float]) -> None:
         sources = self.page.sources()
         self.preview.set_page(
@@ -110,12 +123,15 @@ class DisplayWindow(QWidget):
         current_page: Callable[[], str],
         apply: Callable[[list[DisplayPage], float, bool], None],
         theme: Theme,
+        lock: Callable[[str], None] | None = None,
     ) -> None:
         super().__init__()
         self.setWindowTitle("CaseView – Case display")
         self.setMinimumSize(560, 520)
         self.resize(640, 820)
         self._values, self._current, self._apply = values, current_page, apply
+        self._lock = lock
+        self.locked = config.locked_page if config.locked() else ""
         self.pages = copy.deepcopy(config.pages)
         self.seconds = config.page_seconds
         self._original = (copy.deepcopy(config.pages), config.page_seconds)
@@ -137,6 +153,16 @@ class DisplayWindow(QWidget):
 
         self.live = CaseDisplayPreview()
         root.addWidget(self.live)
+
+        lock_row = QHBoxLayout()
+        self.lock_label = QLabel()
+        self.lock_label.setObjectName("Muted")
+        lock_row.addWidget(self.lock_label, 1)
+        self.unlock_button = QPushButton("Rotate pages")
+        self.unlock_button.setToolTip("Unlock and go back to rotating through the pages")
+        self.unlock_button.clicked.connect(lambda: self._request_lock(""))
+        lock_row.addWidget(self.unlock_button)
+        root.addLayout(lock_row)
 
         row = QHBoxLayout()
         label = QLabel("Seconds per page")
@@ -196,9 +222,30 @@ class DisplayWindow(QWidget):
             card.changed.connect(self._changed)
             card.moveRequested.connect(self._move)
             card.removeRequested.connect(self._remove)
+            card.lockRequested.connect(
+                lambda c: self._request_lock("" if self.locked == c.page.name else c.page.name)
+            )
             self.cards_box.addWidget(card)
             self.cards.append(card)
+        self.set_locked(self.locked)
         self.refresh()
+
+    def _request_lock(self, name: str) -> None:
+        if self._lock is not None:
+            self._lock(name)  # the tray calls back set_locked()
+        else:
+            self.set_locked(name)
+
+    def set_locked(self, name: str) -> None:
+        self.locked = name
+        for card in self.cards:
+            card.set_locked(card.page.name == name)
+        self.lock_label.setText(
+            f"🔒 Locked on “{name}”: the display stays on this page."
+            if name
+            else "Rotating through the pages that are switched on."
+        )
+        self.unlock_button.setEnabled(bool(name))
 
     def _changed(self) -> None:
         self._apply(copy.deepcopy(self.pages), self.seconds, False)  # live on the case
@@ -245,8 +292,9 @@ class DisplayWindow(QWidget):
         current = self._current()
         page = next((p for p in self.pages if p.name == current), None) or self.pages[0]
         sources = page.sources()
+        prefix = "🔒 Locked: " if self.locked else "Now showing: "
         self.live.set_page(
-            f"Now showing: {page.name}", sources, {s: values.get(src) for s, src in sources.items()}
+            f"{prefix}{page.name}", sources, {s: values.get(src) for s, src in sources.items()}
         )
         for card in self.cards:
             card.refresh(values)

@@ -4,6 +4,9 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Added
+- Lock the case display on one page (tray menu, Case display window, phone); `display.locked_page`
+
 ## [0.1.0] - 2026-11-04
 
 First public preview.
