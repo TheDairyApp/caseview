@@ -25,10 +25,10 @@ classifiers = [
 dependencies = ["hidapi>=0.14", "pythonnet>=3.0", "tomli-w>=1.0", "PySide6>=6.7", "psutil>=6"]
 
 [project.urls]
-Homepage = "https://github.com/OWNER/caseview"
-Documentation = "https://github.com/OWNER/caseview#readme"
-Issues = "https://github.com/OWNER/caseview/issues"
-Changelog = "https://github.com/OWNER/caseview/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/TheDairyApp/caseview"
+Documentation = "https://github.com/TheDairyApp/caseview#readme"
+Issues = "https://github.com/TheDairyApp/caseview/issues"
+Changelog = "https://github.com/TheDairyApp/caseview/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
 dev = ["pytest>=8", "ruff>=0.6", "mypy>=1.11", "types-psutil"]

@@ -5,7 +5,7 @@
 **Drive your PC case's front display and RGB lighting from your own sensors.**
 **A free, open-source, low-overhead replacement for vendor display apps on Windows.**
 
-[![CI](https://github.com/OWNER/caseview/actions/workflows/ci.yml/badge.svg)](https://github.com/OWNER/caseview/actions/workflows/ci.yml)
+[![CI](https://github.com/TheDairyApp/caseview/actions/workflows/ci.yml/badge.svg)](https://github.com/TheDairyApp/caseview/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![Python 3.12](https://img.shields.io/badge/python-3.12-3776AB.svg)
 ![Windows 10/11](https://img.shields.io/badge/platform-Windows%2010%20%7C%2011-0078D4.svg)
@@ -95,7 +95,7 @@ The app is a self-contained folder (~85 MB, no Python needed). To remove it, unt
 ### From source
 
 ```powershell
-git clone https://github.com/OWNER/caseview.git
+git clone https://github.com/TheDairyApp/caseview.git
 cd caseview
 python -m venv .venv
 .venv\Scripts\activate

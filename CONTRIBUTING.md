@@ -12,7 +12,7 @@ Thanks for helping! Bug reports, display drivers, docs and code are all welcome.
 ## Development setup
 
 ```powershell
-git clone https://github.com/OWNER/caseview.git
+git clone https://github.com/TheDairyApp/caseview.git
 cd caseview
 python -m venv .venv
 .venv\Scripts\activate

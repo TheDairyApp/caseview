@@ -5,7 +5,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        See [Adding a display](https://github.com/OWNER/caseview/blob/main/docs/adding-a-display.md) for how to capture what the vendor app sends.
+        See [Adding a display](https://github.com/TheDairyApp/caseview/blob/main/docs/adding-a-display.md) for how to capture what the vendor app sends.
   - type: input
     id: model
     attributes:

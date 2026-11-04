@@ -23,5 +23,5 @@ First public preview.
 - App icon; desktop and Start menu shortcuts that run as administrator
 - CLI: `tray`, `rgb`, `run`, `sensors`, `list-devices`, `config`, `shortcut`, `send`, `test-pattern`
 
-[Unreleased]: https://github.com/OWNER/caseview/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/OWNER/caseview/releases/tag/v0.1.0
+[Unreleased]: https://github.com/TheDairyApp/caseview/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/TheDairyApp/caseview/releases/tag/v0.1.0
