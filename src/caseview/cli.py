@@ -158,6 +158,20 @@ def cmd_tray(args: argparse.Namespace) -> int:
     return tray_main(fake_sensors=args.fake)
 
 
+def cmd_shortcut(args: argparse.Namespace) -> int:
+    from caseview.core import shortcuts
+
+    paths = [shortcuts.desktop_path(), shortcuts.start_menu_path()]
+    for path in paths:
+        if args.remove:
+            shortcuts.remove(path)
+            print(f"removed {path}")
+        else:
+            shortcuts.create(path)
+            print(f"created {path} (runs as administrator)")
+    return 0
+
+
 def cmd_config(args: argparse.Namespace) -> int:
     path = config_mod.default_config_path()
     if args.action == "path":
@@ -193,7 +207,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     p = argparse.ArgumentParser(prog="caseview", description="Drive PC case displays.")
     p.add_argument("--version", action="version", version=f"caseview {__version__}")
     p.add_argument("--force", action="store_true", help="send/test even if DT Control is running")
-    sub = p.add_subparsers(dest="cmd", required=True)
+    sub = p.add_subparsers(dest="cmd")
 
     sub.add_parser("list-devices", help="list HID devices and mark supported displays")
 
@@ -218,6 +232,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
     r.add_argument("--no-rgb", action="store_true", help="leave case lighting alone")
 
+    sc = sub.add_parser("shortcut", help="add CaseView to the desktop and Start menu")
+    sc.add_argument("--remove", action="store_true", help="remove the shortcuts instead")
+
     tr = sub.add_parser("tray", help="run in the system tray (display + lighting, all day)")
     tr.add_argument("--fake", action="store_true", help="use simulated sensors")
 
@@ -231,6 +248,13 @@ def main(argv: Sequence[str] | None = None) -> int:
     c.add_argument("--overwrite", action="store_true")
 
     args = p.parse_args(argv)
+    if args.cmd is None:
+        # The packaged CaseView.exe (and a double-click) starts the tray app.
+        if getattr(sys, "frozen", False):
+            args = p.parse_args(["tray"])
+        else:
+            p.print_help()
+            return 2
     # `run` handles conflicts itself (waits or stops); one-shot commands just refuse.
     if args.cmd in ("send", "test-pattern") and not args.force:
         found = conflicts.running_conflicts()
@@ -252,6 +276,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         "config": cmd_config,
         "rgb": cmd_rgb,
         "tray": cmd_tray,
+        "shortcut": cmd_shortcut,
     }
     try:
         return handlers[args.cmd](args)

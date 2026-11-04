@@ -25,9 +25,11 @@ LEAN_HARDWARE = {"Cpu", "GpuNvidia", "GpuAmd", "GpuIntel", "Motherboard", "Super
 
 
 def default_lib_dir() -> Path:
-    # Frozen builds ship the DLLs next to the exe; dev checkouts use vendor/lhm.
+    # Frozen builds ship the DLLs in the bundle (PyInstaller: _internal/lhm);
+    # dev checkouts use vendor/lhm.
     if getattr(sys, "frozen", False):
-        return Path(sys.executable).parent / "lhm"
+        bundle = Path(getattr(sys, "_MEIPASS", Path(sys.executable).parent))
+        return bundle / "lhm"
     return Path(__file__).resolve().parents[3] / "vendor" / "lhm"
 
 

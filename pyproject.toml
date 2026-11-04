@@ -32,6 +32,7 @@ Changelog = "https://github.com/OWNER/caseview/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
 dev = ["pytest>=8", "ruff>=0.6", "mypy>=1.11", "types-psutil"]
+build = ["pyinstaller>=6.10"]
 
 [project.scripts]
 caseview = "caseview.cli:main"

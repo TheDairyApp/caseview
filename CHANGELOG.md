@@ -4,9 +4,6 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
-### Added
-- Lock the case display on one page (tray menu, Case display window, phone); `display.locked_page`
-
 ## [0.1.0] - 2026-11-04
 
 First public preview.
@@ -21,7 +18,10 @@ First public preview.
 - Themes: Graphite, Light, Aurora, Sunset, Violet
 - Optional phone access on the local network, PIN-protected
 - Start with Windows (elevated logon task); vendor-app detection with wait/stop policies
-- CLI: `tray`, `rgb`, `run`, `sensors`, `list-devices`, `config`, `send`, `test-pattern`
+- Lock the case display on one page (tray menu, Case display window, phone)
+- Standalone Windows build (`tools/build.py`, ~85 MB folder) and a GitHub release workflow
+- App icon; desktop and Start menu shortcuts that run as administrator
+- CLI: `tray`, `rgb`, `run`, `sensors`, `list-devices`, `config`, `shortcut`, `send`, `test-pattern`
 
 [Unreleased]: https://github.com/OWNER/caseview/compare/v0.1.0...HEAD
 [0.1.0]: https://github.com/OWNER/caseview/releases/tag/v0.1.0

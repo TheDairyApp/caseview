@@ -81,7 +81,18 @@ Taskbar stats bar:
 
 ## Install
 
-From source:
+### Download (recommended)
+
+1. Download `CaseView-vX.Y.Z-win64.zip` from [Releases](../../releases). Check it against the `.sha256` file if you like.
+2. Extract it anywhere, e.g. `C:\Program Files\CaseView`.
+3. Install [PawnIO](https://pawnio.eu) once, if you haven't already.
+4. Right-click `CaseView.exe` → **Run as administrator**. The tray icon appears.
+5. Tray menu → **Create desktop shortcut**. The shortcut always runs as administrator.
+6. Optional: tray menu → **Start with Windows**.
+
+The app is a self-contained folder (~85 MB, no Python needed). To remove it, untick *Start with Windows*, quit, and delete the folder. Settings live in `%APPDATA%\CaseView`.
+
+### From source
 
 ```powershell
 git clone https://github.com/OWNER/caseview.git
@@ -90,9 +101,18 @@ python -m venv .venv
 .venv\Scripts\activate
 pip install -e .
 python -I tools/fetch_lhm.py      # downloads LibreHardwareMonitorLib from NuGet into vendor/
+caseview shortcut                 # optional: desktop + Start menu shortcuts (run as admin)
 ```
 
-A signed Windows installer is planned (see the [roadmap](docs/ROADMAP.md)).
+### Build the app yourself
+
+```powershell
+pip install -e ".[build]"
+python -I tools/fetch_lhm.py
+python -I tools/build.py          # -> dist\CaseView\CaseView.exe
+```
+
+Pushing a `v*` tag runs the same build on GitHub Actions and attaches the zip to a release.
 
 ## Usage
 
@@ -111,6 +131,7 @@ caseview tray            # run in the system tray (display + lighting + widgets)
 | `caseview list-devices` | List USB HID devices and mark supported displays |
 | `caseview config show \| path \| init` | Show, locate or create the settings file |
 | `caseview config slot <readout> <source>` | Choose which hardware sensor feeds a readout |
+| `caseview shortcut [--remove]` | Add (or remove) desktop and Start menu shortcuts |
 | `caseview send …` / `caseview test-pattern` | Send fixed values or a test pattern to the display |
 
 **Start with Windows:** tray menu → *Start with Windows*. This creates a Task Scheduler logon task with highest privileges, so sensors work without a UAC prompt at every boot.

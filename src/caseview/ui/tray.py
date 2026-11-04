@@ -11,6 +11,7 @@ import ctypes
 import functools
 import logging
 import os
+import subprocess
 import sys
 import threading
 from collections.abc import Callable
@@ -89,10 +90,10 @@ def is_admin() -> bool:
         return False
 
 
-def make_icon(accent: QColor) -> QIcon:
+def make_icon(accent: QColor, sizes: tuple[int, ...] = (16, 24, 32, 48, 64)) -> QIcon:
     """Rounded square with three bars, echoing the case display's three readouts."""
     icon = QIcon()
-    for size in (16, 24, 32, 48, 64):
+    for size in sizes:
         pm = QPixmap(size, size)
         pm.fill(Qt.GlobalColor.transparent)
         p = QPainter(pm)
@@ -221,6 +222,7 @@ class TrayApp(QObject):
         self.autostart_action.setChecked(autostart.is_enabled())
         self.autostart_action.toggled.connect(self._toggle_autostart)
         m.addAction(self.autostart_action)
+        m.addAction("Create desktop shortcut", self._create_shortcut)
         m.addAction("Open settings folder", self._open_settings_folder)
         m.addSeparator()
         m.addAction("Quit", self.quit)
@@ -603,6 +605,16 @@ class TrayApp(QObject):
                 "Could not change the startup task. Run CaseView as administrator once "
                 f"and try again.\n\n{message}",
             )
+
+    def _create_shortcut(self) -> None:
+        from caseview.core import shortcuts
+
+        try:
+            path = shortcuts.create(shortcuts.desktop_path())
+        except (OSError, subprocess.CalledProcessError, ValueError) as e:
+            QMessageBox.warning(None, "Desktop shortcut", f"Could not create the shortcut:\n{e}")
+            return
+        self.tray.showMessage("CaseView", f"Shortcut created: {path.name} on your desktop")
 
     def _open_settings_folder(self) -> None:
         folder = config_mod.default_config_path().parent
